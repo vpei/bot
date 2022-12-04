@@ -700,7 +700,7 @@ def book_text_list(sip, book_json):
                         filename = '?filename=' + title.replace(' ', '_').replace('(', '（').replace(')', '）') + '.' + extension
                     else:
                         filename = '?filename=' + cid + '.' + extension
-                text = text +  '\n[/' + md5 + '](http://' + sip +  ':6805/https://ipfs.io/ipfs/' + cid + '' + str(urllib.urlencode(filename)) + ')'
+                text = text +  '\n[/' + md5 + '](http://' + sip +  ':6805/https://ipfs.io/ipfs/' + cid + '' + filename + ')'
             if('filesize' in a.keys()):
                 text = text + ' (' + extension + ', ' + StrText.bytes_conversion(float(a['filesize'])) + ')'
             text = text +  '\n\n'
