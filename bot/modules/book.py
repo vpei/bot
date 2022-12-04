@@ -58,28 +58,6 @@ def libgenmd5tocid(md5):
     except Exception as e:
         print(f"{e}")
     return cid
-    
-def cid_to_url(sip, zid, cid):
-    # 默认返回网址
-    renodeurl = 'http://' + sip +  ':6805/?https://ipfs.io/ipfs/' + cid
-    # try:
-    #     node = ('http://121.36.203.35:8080', 'http://122.225.207.101:8080', 'http://118.123.241.59:8080', 'http://61.155.145.154:8080', 'http://121.36.203.35:8080', 'http://118.123.241.64:8080', 'http://222.213.23.194:8080', 'http://114.116.213.73:8080', 'http://114.55.27.202:8080')
-    #     if(cid != ''):
-    #         # 处理IPFS URL如果随机生成的文件不存在，则按节点顺序进行检查
-    #         nodeurl = node[(int(zid) % len(node))] + '/ipfs/' + cid
-    #         ustat = NetFile.url_stat(nodeurl, 5, 5)
-    #         if(ustat != 200):
-    #             for nodeurl in node:
-    #                 nodeurl = nodeurl + '/ipfs/' + cid
-    #                 ustat = NetFile.url_stat(nodeurl, 5, 5)
-    #                 if(ustat == 200):
-    #                     break
-    #         # 随机网址检测和所有网址检测中找到文件，则赋值给返回网址
-    #         if(ustat == 200):
-    #             renodeurl = nodeurl
-    # except Exception as e:
-    #     print(f"Book-79-Exception:{e}")
-    return renodeurl
 
 def onebook_6803_all(sip, kword):
     jsontext = json.dumps({'books':[]})
@@ -626,7 +604,7 @@ def book_text_all(sip, check_book_info):
         elif(len(book_info) > 1):
             text = book_text_list(sip, book_info)
         else:
-            text = f'📚 图书暂时不在库中。'
+            text = f'📚 Unfortunately, nothing has been found on your request 🙁'
     except Exception as ex:
         text = f'Book-600-Exception:`' + str(ex) + '`\ncheck_book_info:\n' + str(check_book_info)
         print(text)
@@ -651,11 +629,11 @@ def book_text_one(sip, check_book_info):
         fileurl = 'http://' + sip +  ':6805/?https://ipfs.io/ipfs/' + cid
         # 检测更优质的IPFS节点
         if(len(cid) >= 46):
-            fileurl = cid_to_url(zid, cid)
+            fileurl = 'http://' + sip +  ':6805/?https://ipfs.io/ipfs/' + cid
         elif(len(md5) == 32):
             cid = libgenmd5tocid(md5)
             if(len(cid) >= 46):
-                fileurl = cid_to_url(zid, cid)
+                fileurl = 'http://' + sip +  ':6805/?https://ipfs.io/ipfs/' + cid
         filename = ''
         if(extension != ''):
             if(title != ''):
