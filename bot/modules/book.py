@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import json
 import requests
 import meilisearch
@@ -9,9 +12,7 @@ import time
 import urllib
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from mutagen import File
-from mutagen.mp3 import MP3
 from mutagen.flac import Picture, FLAC
-from config import aria2
 from modules.control import run_rclone
 from bs4 import BeautifulSoup
 from cls import LocalFile, NetFile, StrText
@@ -38,7 +39,8 @@ def searchbooksFromAnna(kword):
     # </div>
     # datalen = len(data)
     i = 0
-    for j in html.split('<div class="h-[125] "'):
+    dcount = len(html.split('<div class="h-[125]'))
+    for j in html.split('<div class="h-[125]'):
         try:
             if(j.find('id="link-index-') > -1 and i < 30):
                 zid = StrText.get_str_btw(j, 'id="link-index-', '"', 0)
@@ -52,10 +54,8 @@ def searchbooksFromAnna(kword):
                 extension = oth[1]
                 publisher = description.split(', ')[0]
                 cid = ''
-                if('ipfs_cid' in j.keys()):
-                    cid = j['ipfs_cid']
-                    if(len(cid) >= 46 and md5 != None):
-                        jsontext['books'].append({'zid': str(zid), 'md5': md5, 'title': title, 'author': author, 'language': language, 'publisher': publisher, 'description': description, 'extension': extension, 'cid': cid})
+                jsontext['books'].append({'zid': str(zid), 'md5': md5, 'title': title, 'author': author, 'language': language, 'publisher': publisher, 'description': description, 'extension': extension, 'cid': cid})
+                i = i + 1
         except Exception as ex:
             print(f"{ex}")
     jsontext = json.dumps(jsontext)
@@ -127,7 +127,7 @@ def md5_json_anna(md5):
             language = ''
             year = ''
             cid = ''
-            url = 'https://annas-archive.org/md5/' + md5.upper()
+            url = 'https://annas-archive.org/md5/' + md5.lower()
             html = NetFile.url_to_str(url, 20, 20)
             if(html != ''):
                 title = StrText.get_str_btw(html, '<div class="text-xl font-bold">', '</div>', 0)
@@ -138,6 +138,7 @@ def md5_json_anna(md5):
                 oth = other.split(', ')
                 language = oth[0]
                 extension = oth[1]
+                year = StrText.get_str_btw(html, '<div class="text-sm">', '</div>', 0).rsplit(', ', 1)[1]
                 publisher = StrText.get_str_btw(html, '<div class="text-sm">', '</div>', 0).split(', ')[0]
 
                 cid = StrText.get_str_btw(html, 'https://ipfs.io/ipfs/', '"', 0)

@@ -3,9 +3,9 @@
 
 from apscheduler.schedulers.background import BackgroundScheduler
 import sys
-from modules.book import get_book_info, book_text_all
-#xx = ''
-#xx = book_text_all('127.0.0.1', xx)
+from modules.book import get_book_info, md5_json_anna
+# kword = '00acd068d438a3b088e0c94e5ea1eb90'
+# kword = md5_json_anna(kword)
 from modules.check import new_clock, second_clock
 from config import client, Telegram_user_id, aria2,Error_user_info,App_title
 from pyrogram.handlers import MessageHandler
