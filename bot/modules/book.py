@@ -16,6 +16,52 @@ from modules.control import run_rclone
 from bs4 import BeautifulSoup
 from cls import LocalFile, NetFile, StrText
 
+def searchbooksFromAnna(kword):
+    jsontext = {'books':[]}
+    html = 'https://annas-archive.org/search?lang=&content=&ext=&sort=&q='+ kword
+    html = NetFile.url_to_str(html, 20, 20)
+    # <div class="h-[125] " id="link-index-4">
+    # <a href="/md5/c8f7aef49e49c406604bc919d29095a4" class="custom-a flex items-center relative left-[-10] px-[10] py-2 hover:bg-[#00000011] ">
+    # <div class="flex-none">
+    # <div class="relative overflow-hidden w-[72] h-[108] flex flex-col justify-center">
+    #     <div class="absolute w-[100%] h-[90]" style="background-color: hsl(20deg 43% 73%)"></div>
+    #     <img class="relative inline-block" src="https://libgen.rs/covers/2878000/c8f7aef49e49c406604bc919d29095a4-g.jpg" alt="" referrerpolicy="no-referrer"/>
+    # </div>
+    # </div>
+    # <div class="relative top-[-1] pl-4 grow overflow-hidden">
+    # <div class="truncate text-xs text-gray-500">Chinese, pdf, 6.7MB, &#34;俞平伯：红楼梦研究.pdf&#34;</div>
+    # <div class="truncate text-xl font-bold">红楼梦研究</div>
+    # <div class="truncate text-sm">人民文学出版社, 红楼梦, 1988</div>
+    # <div class="truncate italic">俞平伯</div>
+    # </div>
+    # </a>
+    # </div>
+    # datalen = len(data)
+    i = 0
+    for j in html.split('<div class="h-[125] "'):
+        try:
+            if(j.find('id="link-index-') > -1 and i < 30):
+                zid = StrText.get_str_btw(j, 'id="link-index-', '"', 0)
+                md5 = StrText.get_str_btw(j, '<a href="/md5/', '"', 0)
+                title = StrText.get_str_btw(j, '<div class="truncate text-xl font-bold">', '</div>', 0)
+                author = StrText.get_str_btw(j, '<div class="truncate italic">', '</div>', 0)
+                description = StrText.get_str_btw(j, '<div class="truncate text-sm">', '</div>', 0)
+                other = StrText.get_str_btw(j, '<div class="truncate text-xs text-gray-500">', '</div>', 0)
+                oth = other.split(', ')
+                language = oth[0]
+                extension = oth[1]
+                publisher = description.split(', ')[0]
+                cid = ''
+                if('ipfs_cid' in j.keys()):
+                    cid = j['ipfs_cid']
+                    if(len(cid) >= 46 and md5 != None):
+                        jsontext['books'].append({'zid': str(zid), 'md5': md5, 'title': title, 'author': author, 'language': language, 'publisher': publisher, 'description': description, 'extension': extension, 'cid': cid})
+        except Exception as ex:
+            print(f"{ex}")
+    jsontext = json.dumps(jsontext)
+    print('Book-47:\n' + jsontext)
+    return jsontext
+
 def searchbooks(kword):
     jsontext = {'books':[]}
     #client = meilisearch.Client('http://127.0.0.1:7700', 'masterKey')
@@ -67,6 +113,42 @@ def onebook_6803_all(sip, kword):
     except Exception as e:
         print(f'Book-60-Exception:{e}')
     return jsontext
+    
+def md5_json_anna(md5):
+    jsontext = {'books':[]}
+    try:
+        if (len(md5) == 32):
+            zid = 0
+            title = ''
+            author = ''
+            publisher = ''
+            description = ''
+            extension = ''
+            language = ''
+            year = ''
+            cid = ''
+            url = 'https://annas-archive.org/md5/' + md5.upper()
+            html = NetFile.url_to_str(url, 20, 20)
+            if(html != ''):
+                title = StrText.get_str_btw(html, '<div class="text-xl font-bold">', '</div>', 0)
+                author = StrText.get_str_btw(html, '<div class="italic">', '</div>', 0)
+                description = StrText.get_str_btw(html, '<div class="mt-4 line-clamp-[6]">', '</div>', 0)
+
+                other = StrText.get_str_btw(html, '<div class="text-xs text-gray-500">', '</div>', 0)
+                oth = other.split(', ')
+                language = oth[0]
+                extension = oth[1]
+                publisher = StrText.get_str_btw(html, '<div class="text-sm">', '</div>', 0).split(', ')[0]
+
+                cid = StrText.get_str_btw(html, 'https://ipfs.io/ipfs/', '"', 0)
+                cid = cid.split('?')[0]
+
+                if(len(cid) >= 46):
+                    jsontext['books'].append({'zid': str(zid), 'md5': md5, 'title': title, 'author': author, 'language': language, 'year': year, 'publisher': publisher, 'description': description, 'extension': extension, 'cid': cid})
+    except Exception as e:
+        print(f"{e}")
+    # jsontext = json.dumps(jsontext)
+    return jsontext
 
 def md5_json_libgen(md5):
     jsontext = {'books':[]}
@@ -101,7 +183,11 @@ def md5_to_book(sip, md5):
     rejsontext = {'books':[]}
     try:
         md5 = md5.lower()
-        jsontext = md5_json_libgen(md5)
+        ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
+        if(ustat == 200):
+            jsontext = md5_json_anna(md5)
+        else:
+            jsontext = md5_json_libgen(md5)
         if(len(jsontext['books']) == 0):
             jsontext = onebook_6803_all(sip, md5)
             jsontext = json.loads(jsontext)
@@ -516,7 +602,11 @@ async def get_book_info(client, message):
                 print('dealcont:' + str(dealcont))
                 jsontext = onebook_6803_all(sip, dealcont)
             else:
-                jsontext = searchbooks(dealcont)
+                ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
+                if(ustat == 200):
+                    jsontext = searchbooksFromAnna(dealcont)
+                else:
+                    jsontext = searchbooks(dealcont)
                 #jsontext = bookslist_libgen_all(dealcont)
         text = book_text_all(sip, jsontext)
         # else:
@@ -669,7 +759,9 @@ def book_text_list(sip, book_json):
             language = a['language'].title()
             cid = a['cid']
             text = text + f'📚 **`' + title + '`**\n' + author + ' ' + publisher + '\n🌐 ' + language
-            if(ustat == 'index' or cid == ''):
+            
+            ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
+            if(ustat == 'index' or cid == '' or ustat == 200):
                 text = text +  '\n/' + md5
             else:
                 filename = ''
