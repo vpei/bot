@@ -130,6 +130,7 @@ def md5_json_anna(md5):
             url = 'https://annas-archive.org/md5/' + md5.lower()
             html = NetFile.url_to_str(url, 20, 20)
             print('html:' + html)
+            LocalFile.write_LogFile(html)
             if(html != ''):
                 title = StrText.get_str_btw(html, '<div class="text-xl font-bold">', '</div>', 0)
                 author = StrText.get_str_btw(html, '<div class="italic">', '</div>', 0)
