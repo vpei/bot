@@ -184,11 +184,11 @@ def md5_to_book(sip, md5):
     rejsontext = {'books':[]}
     try:
         md5 = md5.lower()
-        ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
+        # ustat = NetFile.url_stat(f'https://annas-archive.org/search', 10, 10)
         # if(ustat == 200):
         jsontext = md5_json_anna(md5)
-        # else:
-        #     jsontext = md5_json_libgen(md5)
+        if(len(jsontext['books']) == 0):
+            jsontext = md5_json_libgen(md5)
         if(len(jsontext['books']) == 0):
             jsontext = onebook_6803_all(sip, md5)
             jsontext = json.loads(jsontext)
@@ -584,6 +584,7 @@ async def get_book_info(client, message):
     try:
         sip = '54.180.99.13'
         dealcont = message.text
+        print(dealcont)
         if(dealcont.find(' ') > -1):
             dealcont = dealcont.split()[1]
         if(dealcont.find('/book') > -1 and dealcont.find('_') > -1):
@@ -595,6 +596,7 @@ async def get_book_info(client, message):
         dealcont = str(dealcont)
         jsontext = ''
         if(len(dealcont) == 32):
+            print(dealcont)
             jsontext = md5_to_book(sip, dealcont)
         elif(len(dealcont) == 46 or len(dealcont) == 62):
             jsontext = onebook_6803_all(sip, dealcont)
