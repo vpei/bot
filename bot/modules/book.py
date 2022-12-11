@@ -184,10 +184,10 @@ def md5_to_book(sip, md5):
     try:
         md5 = md5.lower()
         ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
-        if(ustat == 200):
-            jsontext = md5_json_anna(md5)
-        else:
-            jsontext = md5_json_libgen(md5)
+        # if(ustat == 200):
+        jsontext = md5_json_anna(md5)
+        # else:
+        #     jsontext = md5_json_libgen(md5)
         if(len(jsontext['books']) == 0):
             jsontext = onebook_6803_all(sip, md5)
             jsontext = json.loads(jsontext)
