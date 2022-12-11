@@ -606,11 +606,11 @@ async def get_book_info(client, message):
                 print('dealcont:' + str(dealcont))
                 jsontext = onebook_6803_all(sip, dealcont)
             else:
-                ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
-                if(ustat == 200):
-                    jsontext = searchbooksFromAnna(dealcont)
-                else:
-                    jsontext = searchbooks(dealcont)
+                # ustat = NetFile.url_stat(f'https://annas-archive.org/search', 6, 6)
+                # if(ustat == 200):
+                jsontext = searchbooksFromAnna(dealcont)
+                # else:
+                #     jsontext = searchbooks(dealcont)
                 #jsontext = bookslist_libgen_all(dealcont)
         text = book_text_all(sip, jsontext)
         # else:
